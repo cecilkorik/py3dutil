@@ -2,7 +2,7 @@ from distutils.core import setup, Extension
 from cPickle import load, dump
 import os
 
-module1 = Extension('pyobarr', sources = ['pyobarr.c', 'obarr.c', 'cgrid.c', 'red_black_tree.c', 'misc.c'])
+module1 = Extension('py3dutil', sources = ['py3dutil.c', 'obarr.c', 'cgrid.c', 'red_black_tree.c', 'misc.c', 'vect.c'])
 
 buildno = 0
 if os.path.exists('buildno'):

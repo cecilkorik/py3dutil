@@ -7,13 +7,6 @@ typedef int Py_ssize_t;
 #define PY_SSIZE_T_MIN INT_MIN
 #endif
 
-typedef struct {
-	PyObject_HEAD
-	double elements[VECLEN];
-} VectObject;
-
-
-#define Vect_Check(op) PyObject_TypeCheck(op, &VectObjectType)
 #define VEC3D
 
 #ifdef VEC3D
@@ -25,8 +18,17 @@ typedef struct {
 #endif
 
 
+typedef struct VectObject {
+	PyObject_HEAD
+	double elements[VECLEN];
+} VectObject;
+
+
+#define Vect_Check(op) PyObject_TypeCheck(op, &VectObjectType)
+
+
 // internal functions
-PyObject* vect_get_element(PyObject* self_in, int index);
+PyObject* vect_get_element(PyObject* self_in, long index);
 
 // Python API functions
 int Vect_init(VectObject *self, PyObject *args, PyObject *kwds);
@@ -60,8 +62,8 @@ PyObject* Vect_copy(PyObject *self_in, PyObject *unused);
 PyObject* Vect_dist(PyObject *self_in, PyObject *args);
 PyObject* Vect_slerp(PyObject *self_in, PyObject *args);
 PyObject* Vect_sserp(PyObject *self_in, PyObject *args);
-int Vect_len(PyObject *self_in);
-PyObject* Vect_item(PyObject *self_in, int index);
+Py_ssize_t Vect_len(PyObject *self_in);
+PyObject* Vect_item(PyObject *self_in, Py_ssize_t index);
 
 
 

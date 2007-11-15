@@ -1,4 +1,4 @@
-
+#include "vect.h"
 #include <math.h>
 
 #ifdef _MSC_VER
@@ -22,8 +22,6 @@
 
 
 
-staticforward PyTypeObject VectObjectType;
-
 int Vect_init(VectObject *self, PyObject *args, PyObject *kwds)
 {
 #if defined (VEC3D)
@@ -46,7 +44,7 @@ int Vect_init(VectObject *self, PyObject *args, PyObject *kwds)
 	return 0;
 }
 
-PyObject* vect_get_element(PyObject* self_in, int index)
+PyObject* vect_get_element(PyObject* self_in, long index)
 {
 	VectObject* self = (VectObject*)self_in;
 	return PyFloat_FromDouble(self->elements[index]);
@@ -103,7 +101,7 @@ int Vect_true(PyObject *self_in)
 {
 	VectObject *self = (VectObject*)self_in;
 	int b = 1;
-	int i;
+	long i;
 	double x;
 	for (i = 0; i < VECLEN; i++)
 	{
@@ -117,7 +115,7 @@ int Vect_true(PyObject *self_in)
 PyObject* Vect_add(PyObject *self_in, PyObject *other_in)
 {
 	VectObject *self, *other, *rv;
-	int i;
+	long i;
 	if (!Vect_Check(self_in) || !Vect_Check(other_in))	
 	{
 		PyErr_SetString(PyExc_TypeError, "both arguments must be of type 'vect'");
@@ -135,7 +133,7 @@ PyObject* Vect_add(PyObject *self_in, PyObject *other_in)
 PyObject* Vect_sub(PyObject *self_in, PyObject *other_in)
 {
 	VectObject *self, *other, *rv;
-	int i;
+	long i;
 	if (!Vect_Check(self_in) || !Vect_Check(other_in))	
 	{
 		PyErr_SetString(PyExc_TypeError, "both arguments must be of type 'vect'");
@@ -153,7 +151,7 @@ PyObject* Vect_sub(PyObject *self_in, PyObject *other_in)
 PyObject* Vect_mul(PyObject *self_in, PyObject *other_in)
 {
 	VectObject *self, *rv;
-	int i;
+	long i;
 	double scalar;
 	if (!Vect_Check(self_in) || !PyFloat_Check(other_in))	
 	{
@@ -173,7 +171,7 @@ PyObject* Vect_mul(PyObject *self_in, PyObject *other_in)
 PyObject* Vect_div(PyObject *self_in, PyObject *other_in)
 {
 	VectObject *self, *rv;
-	int i;
+	long i;
 	double scalar;
 	if (!Vect_Check(self_in) || !PyFloat_Check(other_in))	
 	{
@@ -192,7 +190,7 @@ PyObject* Vect_div(PyObject *self_in, PyObject *other_in)
 PyObject* Vect_ip_add(PyObject *self_in, PyObject *other_in)
 {
 	VectObject *self, *other;
-	int i;
+	long i;
 	if (!Vect_Check(self_in) || !Vect_Check(other_in))	
 	{
 		PyErr_SetString(PyExc_TypeError, "both arguments must be of type 'vect'");
@@ -210,7 +208,7 @@ PyObject* Vect_ip_add(PyObject *self_in, PyObject *other_in)
 PyObject* Vect_ip_sub(PyObject *self_in, PyObject *other_in)
 {
 	VectObject *self, *other;
-	int i;
+	long i;
 
 	if (!Vect_Check(self_in) || !Vect_Check(other_in))	
 	{
@@ -229,7 +227,7 @@ PyObject* Vect_ip_sub(PyObject *self_in, PyObject *other_in)
 PyObject* Vect_ip_mul(PyObject *self_in, PyObject *other_in)
 {
 	VectObject *self;
-	int i;
+	long i;
 	double scalar;
 	if (!Vect_Check(self_in) || !PyFloat_Check(other_in))	
 	{
@@ -248,7 +246,7 @@ PyObject* Vect_ip_mul(PyObject *self_in, PyObject *other_in)
 PyObject* Vect_ip_div(PyObject *self_in, PyObject *other_in)
 {
 	VectObject *self;
-	int i;
+	long i;
 	double scalar;
 	if (!Vect_Check(self_in) || !PyFloat_Check(other_in))	
 	{
@@ -267,7 +265,7 @@ PyObject* Vect_ip_div(PyObject *self_in, PyObject *other_in)
 PyObject* Vect_negate(PyObject *self_in)
 {
 	VectObject *self, *rv;
-	int i;
+	long i;
 	if (!Vect_Check(self_in))	
 	{
 		PyErr_SetString(PyExc_TypeError, "not a vector");
@@ -284,7 +282,7 @@ PyObject* Vect_negate(PyObject *self_in)
 PyObject* Vect_ip_negate(PyObject *self_in, PyObject *unused)
 {
 	VectObject *self;
-	int i;
+	long i;
 	if (!Vect_Check(self_in))	
 	{
 		PyErr_SetString(PyExc_TypeError, "not a vector");
@@ -301,7 +299,7 @@ PyObject* Vect_ip_negate(PyObject *self_in, PyObject *unused)
 PyObject* Vect_ip_zero(PyObject *self_in, PyObject *unused)
 {
 	VectObject *self;
-	int i;
+	long i;
 	if (!Vect_Check(self_in))	
 	{
 		PyErr_SetString(PyExc_TypeError, "not a vector");
@@ -319,7 +317,7 @@ PyObject* Vect_ip_normalize(PyObject *self_in, PyObject *unused)
 {
 	VectObject *self;
 	double mag, mag2;
-	int i;
+	long i;
 	if (!Vect_Check(self_in))	
 	{
 		PyErr_SetString(PyExc_TypeError, "not a vector");
@@ -344,7 +342,7 @@ PyObject* Vect_mag(PyObject *self_in, PyObject *unused)
 {
 	VectObject *self;
 	double d;
-	int i;
+	long i;
 	if (!Vect_Check(self_in))	
 	{
 		PyErr_SetString(PyExc_TypeError, "not a vector");
@@ -363,7 +361,7 @@ PyObject* Vect_mag2(PyObject *self_in, PyObject *unused)
 {
 	VectObject *self;
 	double d;
-	int i;
+	long i;
 	if (!Vect_Check(self_in))	
 	{
 		PyErr_SetString(PyExc_TypeError, "not a vector");
@@ -381,7 +379,7 @@ PyObject* Vect_dotprod(PyObject *self_in, PyObject *args)
 {
 	VectObject *self, *other;
 	double d;
-	int i;
+	long i;
 	if (!Vect_Check(self_in))	
 	{
 		PyErr_SetString(PyExc_TypeError, "not a vector");
@@ -413,7 +411,7 @@ PyObject* Vect_crossprod(PyObject *self_in, PyObject *unused)
 {
 	VectObject *self;
 	double d;
-	int i;
+	long i;
 	if (!Vect_Check(self_in))	
 	{
 		PyErr_SetString(PyExc_TypeError, "not a vector");
@@ -431,7 +429,7 @@ PyObject* Vect_crossprod(PyObject *self_in, PyObject *unused)
 PyObject* Vect_average(PyObject *self_in, PyObject *args)
 {
 	VectObject *self, *other, *rv;
-	int i;
+	long i;
 	if (!Vect_Check(self_in))	
 	{
 		PyErr_SetString(PyExc_TypeError, "not a vector");
@@ -454,7 +452,7 @@ PyObject* Vect_dir(PyObject *self_in, PyObject *unused)
 {
 	VectObject *self;
 	double d;
-	int i;
+	long i;
 	if (!Vect_Check(self_in))	
 	{
 		PyErr_SetString(PyExc_TypeError, "not a vector");
@@ -471,7 +469,7 @@ PyObject* Vect_dir(PyObject *self_in, PyObject *unused)
 PyObject* Vect_copy(PyObject *self_in, PyObject *unused)
 {
 	VectObject *self, *rv;
-	int i;
+	long i;
 	if (!Vect_Check(self_in))	
 	{
 		PyErr_SetString(PyExc_TypeError, "not a vector");
@@ -489,7 +487,7 @@ PyObject* Vect_dist(PyObject *self_in, PyObject *args)
 {
 	VectObject *self, *other;
 	double d, dd;
-	int i;
+	long i;
 	if (!Vect_Check(self_in))	
 	{
 		PyErr_SetString(PyExc_TypeError, "not a vector");
@@ -516,7 +514,7 @@ PyObject* Vect_slerp(PyObject *self_in, PyObject *args)
 {
 	VectObject *self, *other, *rv;
 	double amt, oamt;
-	int i;
+	long i;
 	if (!Vect_Check(self_in))	
 	{
 		PyErr_SetString(PyExc_TypeError, "not a vector");
@@ -544,7 +542,7 @@ PyObject* Vect_sserp(PyObject *self_in, PyObject *args)
 {
 	VectObject *self, *other, *rv, *norm;
 	double amt, oamt, smag, omag;
-	int i;
+	long i;
 	if (!Vect_Check(self_in))	
 	{
 		PyErr_SetString(PyExc_TypeError, "not a vector");
@@ -579,7 +577,7 @@ PyObject* Vect_sserp(PyObject *self_in, PyObject *args)
 }
 
 
-int Vect_len(PyObject *self_in)
+Py_ssize_t Vect_len(PyObject *self_in)
 {
 	if (!Vect_Check(self_in))	
 	{
@@ -590,7 +588,7 @@ int Vect_len(PyObject *self_in)
 }
 
 
-PyObject* Vect_item(PyObject *self_in, int index)
+PyObject* Vect_item(PyObject *self_in, Py_ssize_t index)
 {
 	if (!Vect_Check(self_in))	
 	{
