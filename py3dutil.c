@@ -1,5 +1,5 @@
 #include "obarr.h"
-#include "cgrid.h"
+/*#include "cgrid.h"*/
 #include "vect.h"
 
 
@@ -13,12 +13,12 @@ initpy3dutil(void)
 	PyObject* m;
 
 	ObarrObjectType.tp_new = PyType_GenericNew;
-	CgridObjectType.tp_new = PyType_GenericNew;
+	/*CgridObjectType.tp_new = PyType_GenericNew;*/
 	VectObjectType.tp_new = PyType_GenericNew;
 	if (PyType_Ready(&ObarrObjectType) < 0)
 		return;
-	if (PyType_Ready(&CgridObjectType) < 0)
-		return;
+	/*if (PyType_Ready(&CgridObjectType) < 0)
+		return;*/
 	if (PyType_Ready(&VectObjectType) < 0)
 		return;
 
@@ -29,8 +29,9 @@ initpy3dutil(void)
 		return;
 
 	Py_INCREF(&ObarrObjectType);
-	Py_INCREF(&CgridObjectType);
+	/*Py_INCREF(&CgridObjectType);*/
+	Py_INCREF(&VectObjectType);
 	PyModule_AddObject(m, "obarr", (PyObject *)&ObarrObjectType);
-	PyModule_AddObject(m, "cgrid", (PyObject *)&CgridObjectType);
+	/*PyModule_AddObject(m, "cgrid", (PyObject *)&CgridObjectType);*/
 	PyModule_AddObject(m, "vect", (PyObject *)&VectObjectType);
 }

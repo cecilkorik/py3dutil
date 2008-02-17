@@ -630,6 +630,16 @@ void RBDelete(rb_red_blk_tree* tree, rb_red_blk_node* z){
 }
 
 
+void* RBExactQueryInfo(rb_red_blk_tree* tree, void* key)
+{
+	rb_red_blk_node* pNode = NULL;
+	pNode = RBExactQuery(tree, key);
+	if (pNode)
+		return pNode->info;
+	return NULL;
+}
+
+
 /***********************************************************************/
 /*  FUNCTION:  RBDEnumerate */
 /**/

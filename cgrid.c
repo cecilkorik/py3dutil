@@ -1,6 +1,7 @@
 #include "cgrid.h"
 #include "obarr.h"
 #include "red_black_tree.h"
+#include <math.h>
 
 void cgrid_unroll(CgridObject* self)
 {
@@ -117,12 +118,128 @@ void cgrid_printinfo(void* a)
 	printf("<Obarr size %d>", arr->nSize);
 }
 
+long cgrid_coord_to_gridcoord(CgridObject* self, double coord)
+{
+	return long(floor(coord / self->dCellSize));
+}
+
+ObarrObject* cgrid_get_radius(CgridObject *self, PyObject *other, double dRadius)
+{
+	ObarrObject *pNeighbors;
+	pNeighbors = PyObject_New(ObarrObject, &ObarrObjectType);
+	if (!cgrid_get_radius_append(pNeighbors))
+	{
+		Py_DECREF(pNeighbors);
+		return NULL;
+	}
+	return pNeighbors;
+
+}
+void* cgrid_get_radius_append(CgridObject *self, PyObject *other, double dRadius, ObarrObject *pNeighbors)
+{
+	PyObject *el = NULL;
+	rb_red_blk_node* pNode = NULL;
+	PyObject *pAttr;
+	CgridInfo *pV;
+	CgridKey k;
+	double dRe;
+	double dX, dY, dZ;
+	double dXi, dYi, dZi;
+	double dXs, dYs, dZs;
+	double dXe, dYe, dZe;
+	long x, y, r, i;
+	
+    if (!PyArg_ParseTuple(args, "Od", &other, &dRadius))
+	{
+		PyErr_SetString(PyExc_TypeError, "wrong arguments");
+		return NULL;
+	}
+	
+	pAttr = PyObject_GetAttrString(other, "pos")
+    if (!pAttr)
+    {
+		PyErr_SetString(PyExc_TypeError, "missing 'pos' attribute of input object");
+		return NULL;
+    }
+    
+    if (!PyArg_ParseTuple(pAttr, "ddd", &dX, &dY, &dZ))
+	{
+		Py_DECREF(pAttr);
+		PyErr_SetString(PyExc_TypeError, "invalid 'pos' attribute of input object");
+		return NULL;
+	}
+	Py_DECREF(pAttr);
+
+	dXs = dX + dRadius + (self->dCellSize * 0.1);
+	dYs = dY + dRadius + (self->dCellSize * 0.1);
+	dZs = dZ + dRadius + (self->dCellSize * 0.1);
+	
+	for (dXi = (dX - dRadius); dXi <= dXs; dXi += self->dCellSize)
+	{
+		for (dYi = (dY - dRadius); dYi <= dYs; dYi += self->dCellSize)
+		{
+			for (dZi = (dZ - dRadius); dZi <= dZs; dZi += self->dCellSize)
+			{
+				k.x = cgrid_coord_to_gridcoord(dXi);
+				k.y = cgrid_coord_to_gridcoord(dYi);
+				k.z = cgrid_coord_to_gridcoord(dZi);
+				pNode = RBExactQuery(self->pTree, &k);
+				if (pNode)
+				{
+					pV = (CgridInfo*)pNode->info;
+					for (i = 0; i < pV->pContents->nSize; i++)
+					{
+						el = obarr_get_element(pV->pContents, i);
+						pAttr = PyObject_GetAttrString(other, "pos");
+					    if (!pAttr)
+						{
+							PyErr_SetString(PyExc_TypeError, "missing 'pos' attribute of object in grid");
+							return NULL;
+						}
+					    if (!PyArg_ParseTuple(pAttr, "ddd", &dXe, &dYe, &dZe))
+						{
+							Py_DECREF(pAttr);
+							PyErr_SetString(PyExc_TypeError, "invalid 'pos' attribute of object in grid");
+							return NULL;
+						}
+						Py_DECREF(pAttr);
+
+						pAttr = PyObject_GetAttrString(other, "radius");
+					    if (!pAttr)
+							dRe = 0.0;
+					    else if (!PyFloat_Check(pAttr))
+						{
+							Py_DECREF(pAttr);
+							PyErr_SetString(PyExc_TypeError, "invalid 'radius' attribute of object in grid");
+							return NULL;
+						}
+						else
+							dRe = PyFloat_AsDouble(pAttr);
+						Py_DECREF(pAttr);
+						
+						dDist = sqrt(SQR(dXe - dX) + SQR(dYe - dY) + SQR(dZe - dZ)) - dRe;
+						if (dDist > dRadius)
+							continue;
+						if (!obarr_append(pNeighbors, el))
+						{
+							PyErr_SetString(PyExc_MemoryError, "out of memory");
+							return NULL;
+						}
+					}
+				}
+			}
+		}
+	}
+	
+	return pNeighbors;
+}
+
 
 int Cgrid_init(CgridObject *self, PyObject *args, PyObject *kwds)
 {
-	double fCell;
+	double dCell;
 	
-    if (!PyArg_ParseTuple(args, "d", &fCell))
+    if (!PyArg_ParseTuple(args, "d", &dCell))
 	{
 		PyErr_SetString(PyExc_TypeError, "wrong arguments");
 		return 1;
@@ -131,7 +248,7 @@ int Cgrid_init(CgridObject *self, PyObject *args, PyObject *kwds)
 	self->pTree = RBTreeCreate(cgrid_compare, cgrid_destroykey, cgrid_destroyinfo, cgrid_printkey, cgrid_printinfo);
 	self->nSize = 0;
 	self->nCells = 0;
-	self->fCellSize = fCell;
+	self->dCellSize = dCell;
 	self->pUnrolled = NULL;
 	self->bUnrollDirty = 1;
 
@@ -355,6 +472,24 @@ PyObject* Cgrid_remove(PyObject *self_in, PyObject *args)
 
 }
 
+PyObject* Cgrid_get_radius(PyObject *self_in, PyObject *args)
+{
+	CgridObject *self = (CgridObject*)self_in;
+	PyObject *other = NULL;
+	double dRadius;
+		
+    if (!PyArg_ParseTuple(args, "Od", &other, &dRadius))
+	{
+		PyErr_SetString(PyExc_TypeError, "wrong arguments");
+		return NULL;
+	}
+	
+	return cgrid_get_radius(self, other, dRadius);	
+}
+	
+
+
+
 PySequenceMethods Cgrid_as_seq[] = {
 	Cgrid_len,			/* sq_length */
 	0,					/* sq_concat */
@@ -384,7 +519,7 @@ struct PyMemberDef Cgrid_members[] = {
 PyTypeObject CgridObjectType = {
 	PyObject_HEAD_INIT(NULL)
 	0,				/* ob_size        */
-	"pyobarr.cgrid",		/* tp_name        */
+	"py3dutil.cgrid",		/* tp_name        */
 	sizeof(CgridObject),		/* tp_basicsize   */
 	0,				/* tp_itemsize    */
 	Cgrid_dealloc,	/* tp_dealloc     */

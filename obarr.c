@@ -129,6 +129,16 @@ int obarr_set_size(ObarrObject* self, long size)
 	return 1;
 }
 
+int obarr_append(ObarrObject *self, PyObject *other)
+{
+	if (obarr_set_size(self, self->nSize + 1))
+	{
+		obarr_set_element(self, self->nSize - 1, other);
+		return 1;
+	}
+	return 0;
+}
+
 int Obarr_init(ObarrObject *self, PyObject *args, PyObject *kwds)
 {
 	self->nSize = 0;
@@ -422,9 +432,6 @@ PyObject* Obarr_debug(PyObject* self_in, PyObject* args)
 	return Py_None;
 	
 }
-
-
-
 
 /* Python object definition structures */
 PySequenceMethods Obarr_as_seq[] = {

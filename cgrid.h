@@ -15,7 +15,7 @@ typedef struct CgridObject {
 	rb_red_blk_tree*	pTree;
 	long				nSize;
 	long				nCells;
-	double				fCellSize;
+	double				dCellSize;
 	ObarrObject*		pUnrolled;
 	int					bUnrollDirty;
 } CgridObject;
@@ -37,6 +37,7 @@ typedef struct CgridInfo {
 	
 } CgridInfo;
 
+#define SQR(x) ((x) * (x))
 
 /* internal functions */
 void cgrid_unroll(CgridObject* self);
@@ -47,6 +48,9 @@ void cgrid_destroykey(void* a);
 void cgrid_destroyinfo(void* a);
 void cgrid_printkey(const void* a);
 void cgrid_printinfo(void* a);
+long cgrid_coord_to_gridcoord(CgridObject* self, double coord);
+ObarrObject* cgrid_get_radius(CgridObject* self, PyObject* other, double dRadius);
+void cgrid_get_radius_append(CgridObject* self, PyObject* other, double dRadius, ObarrObject* pNeighbors);
 
 /* exported API functions */
 int Cgrid_init(CgridObject *self, PyObject *args, PyObject *kwds);
@@ -58,6 +62,7 @@ PyObject* Cgrid_repr(PyObject *self_in);
 PyObject* Cgrid_insert(PyObject *self_in, PyObject *args);
 PyObject* Cgrid_delete(PyObject *self_in, PyObject *args);
 PyObject* Cgrid_remove(PyObject *self_in, PyObject *args);
+PyObject* Cgrid_get_radius(PyObject *self_in, PyObject *args);
 /*PyObject* Cgrid_remove(PyObject *self_in, PyObject *args);*/
 
 extern PySequenceMethods Cgrid_as_seq[];

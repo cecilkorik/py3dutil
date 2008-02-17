@@ -362,7 +362,7 @@ PyObject* Vect_mag2(PyObject *self_in, PyObject *unused)
 	VectObject *self;
 	double d;
 	long i;
-	if (!Vect_Check(self_in))	
+	if (!Vect_Check(self_in))
 	{
 		PyErr_SetString(PyExc_TypeError, "not a vector");
 		return NULL;
@@ -380,7 +380,7 @@ PyObject* Vect_dotprod(PyObject *self_in, PyObject *args)
 	VectObject *self, *other;
 	double d;
 	long i;
-	if (!Vect_Check(self_in))	
+	if (!Vect_Check(self_in))
 	{
 		PyErr_SetString(PyExc_TypeError, "not a vector");
 		return NULL;
@@ -407,30 +407,38 @@ PyObject* Vect_dotprod(PyObject *self_in, PyObject *args)
 	return PyFloat_FromDouble(acos(d) * RAD2DEG);
 }
 
-PyObject* Vect_crossprod(PyObject *self_in, PyObject *unused)
+#define A1 self->elements[0]
+#define A2 self->elements[1]
+#define A3 self->elements[2]
+#define B1 other->elements[0]
+#define B2 other->elements[1]
+#define B3 other->elements[2]
+PyObject* Vect_crossprod(PyObject *self_in, PyObject *args)
 {
-	VectObject *self;
-	double d;
-	long i;
-	if (!Vect_Check(self_in))	
+	VectObject *self, *other, *rv;
+	if (!Vect_Check(self_in))
 	{
 		PyErr_SetString(PyExc_TypeError, "not a vector");
 		return NULL;
 	}
 	self = (VectObject*)self_in;
-	d = 0.0;
-	for (i = 0; i < VECLEN; i++)
-		d += self->elements[i] * self->elements[i];
-
-	Py_INCREF(self);
-	return (PyObject*)self;
+	if (!PyArg_ParseTuple(args, "O!", &VectObjectType, &other))
+	{
+		PyErr_SetString(PyExc_TypeError, "argument is not a vector");
+		return NULL;
+	}
+	rv = PyObject_New(VectObject, &VectObjectType);
+	rv->elements[0] = (A2*B3) - (A3*B2);
+	rv->elements[1] = (A3*B1) - (A1*B3);
+	rv->elements[2] = (A1*B2) - (A2*B1);
+	return (PyObject*)rv;
 }
 
 PyObject* Vect_average(PyObject *self_in, PyObject *args)
 {
 	VectObject *self, *other, *rv;
 	long i;
-	if (!Vect_Check(self_in))	
+	if (!Vect_Check(self_in))
 	{
 		PyErr_SetString(PyExc_TypeError, "not a vector");
 		return NULL;

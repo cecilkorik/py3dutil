@@ -26,6 +26,7 @@ void obarr_empty(ObarrObject* self);
 void obarr_del_index(ObarrObject* self, long i);
 int obarr_valid_index(ObarrObject* self, long i);
 int obarr_set_size(ObarrObject* self, long size);
+int obarr_append(ObarrObject* self, PyObject* other);
 
 /* exposed API functions (note uppercase Obarr) */
 int Obarr_init(ObarrObject *self, PyObject *args, PyObject *kwds);
