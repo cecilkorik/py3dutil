@@ -1,0 +1,14 @@
+This program is licenced under the LGPL 3.0. Please read the attached
+file "LICENCE" for the terms and conditions of using, modifying or
+redistributing this program.
+
+This is a C module, to install it you must have a working C compiler like 
+GCC installed on your system to build it.
+
+To install it, it should be as simple as typing "python setup.py install"
+as root. You can then import it from a python program by doing something
+like "from py3dutil import vect, obarr"
+
+Documentation is minimal, but should be good enough if you have a basic
+knowledge of 3D programming. Better documentation is on my to-do list...
+Sorry.
