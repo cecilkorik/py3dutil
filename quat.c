@@ -564,7 +564,7 @@ PyNumberMethods Quat_as_number[] = {
     0,                  /* nb_remainder */
     0,                  /* nb_divmod */
     0,                  /* nb_power */
-    0,			        /* nb_negative */
+    Quat_get_conjugate, /* nb_negative */
     0,                  /* nb_positive */
     0,                  /* nb_absolute */
     Quat_true,          /* nb_nonzero */
