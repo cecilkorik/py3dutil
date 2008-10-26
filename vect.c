@@ -375,11 +375,22 @@ PyObject* Vect_mag2(PyObject *self_in, PyObject *unused)
 	return PyFloat_FromDouble(d);
 }
 
+double vect_dotprod_internal(VectObject *self, VectObject *other)
+{
+	int i;
+	double d = 0.0;
+	for (i = 0; i < VECLEN; i++)
+		d += self->elements[i] * other->elements[i];
+	if (d >= 1.0)
+		return 0.0;
+
+	return acos(d);
+}
+
 PyObject* Vect_dotprod(PyObject *self_in, PyObject *args)
 {
 	VectObject *self, *other;
 	double d;
-	long i;
 	if (!Vect_Check(self_in))
 	{
 		PyErr_SetString(PyExc_TypeError, "not a vector");
@@ -397,14 +408,9 @@ PyObject* Vect_dotprod(PyObject *self_in, PyObject *args)
             return 0.0
         return math.acos(value) * 180.0 / math.pi
 */	
-	
-	d = 0.0;
-	for (i = 0; i < VECLEN; i++)
-		d += self->elements[i] * other->elements[i];
-	if (d >= 1.0)
-		return PyFloat_FromDouble(0.0);
 
-	return PyFloat_FromDouble(acos(d) * RAD2DEG);
+	d = vect_dotprod_internal(self, other) * RAD2DEG;
+	return PyFloat_FromDouble(d);
 }
 
 #define A1 self->elements[0]

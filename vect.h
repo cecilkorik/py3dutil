@@ -1,3 +1,6 @@
+#ifndef VECT_H_INCLUDED
+#define VECT_H_INCLUDED
+
 #include <Python.h>
 #include <structmember.h>
 
@@ -29,6 +32,7 @@ typedef struct VectObject {
 
 // internal functions
 PyObject* vect_get_element(PyObject* self_in, long index);
+double vect_dotprod_internal(VectObject *self, VectObject *other);
 
 // Python API functions
 int Vect_init(VectObject *self, PyObject *args, PyObject *kwds);
@@ -75,3 +79,5 @@ extern PyGetSetDef Vect_getset[];
 extern PyMethodDef Vect_methods[];
 extern struct PyMemberDef Vect_members[];
 extern PyTypeObject VectObjectType;
+
+#endif

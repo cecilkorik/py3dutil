@@ -2,7 +2,7 @@ from distutils.core import setup, Extension
 from cPickle import load, dump
 import os
 
-module1 = Extension('py3dutil', sources = ['py3dutil.c', 'obarr.c', 'red_black_tree.c', 'misc.c', 'vect.c'])
+module1 = Extension('py3dutil', sources = ['py3dutil.c', 'obarr.c', 'red_black_tree.c', 'misc.c', 'vect.c', 'quat.c'])
 
 buildno = 0
 if os.path.exists('buildno'):
@@ -11,7 +11,7 @@ if os.path.exists('buildno'):
 dump(buildno, open('buildno', 'wb'))
 
 setup (name = 'py3dutil',
-	version = '0.1.%.4d' % (buildno,),
+	version = '0.2.%.4d' % (buildno,),
 	description = 'Accelerator library for 3d games',
 	author = 'Bradley Lawrence',
 	author_email = 'py3dutil@iambitter.org',
