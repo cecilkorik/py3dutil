@@ -24,6 +24,7 @@ double quat_mag_internal(QuatObject* self);
 double quat_mag2_internal(QuatObject* self);
 void quat_normalize_internal(QuatObject* self);
 void quat_get_conjugate_internal(QuatObject* self, QuatObject* rv);
+int quat_validate(QuatObject* input);
 
 // Python API functions
 int Quat_init(QuatObject *self, PyObject *args, PyObject *kwds);
@@ -41,11 +42,13 @@ PyObject* Quat_mag2(PyObject *self_in, PyObject *unused);
 PyObject* Quat_copy(PyObject *self_in, PyObject *unused);
 PyObject* Quat_get_angle(PyObject *self_in, PyObject *unused);
 PyObject* Quat_get_conjugate(PyObject *self_in, PyObject *unused);
+PyObject* Quat_ip_negate(PyObject *self_in);
 PyObject* Quat_get_matrix(PyObject *self_in, PyObject *unused);
 PyObject* Quat_slerp(PyObject *self_in, PyObject *args);
 PyObject* Quat_slerp_turn(PyObject *self_in, PyObject *args);
 Py_ssize_t Quat_len(PyObject *self_in);
 PyObject* Quat_item(PyObject *self_in, Py_ssize_t index);
+PyObject* Quat_richcompare(PyObject* a, PyObject* b, int op);
 
 
 

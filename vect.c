@@ -619,7 +619,34 @@ PyObject* Vect_item(PyObject *self_in, Py_ssize_t index)
 
 }
 
+PyObject* Vect_richcompare(PyObject* a, PyObject* b, int op)
+{
+	VectObject *v1, *v2;
+	double diff;
+	if (op == Py_EQ)
+	{
+		if (!Vect_Check(a) || !Vect_Check(b))	
+		{
+			PyErr_SetString(PyExc_TypeError, "can only compare two vects");
+			return NULL;
+		}
+		v1 = (VectObject*)a;
+		v2 = (VectObject*)b;
 
+		diff = v1->elements[0] - v2->elements[0];
+		if (diff > 1e-9 || -diff > 1e-9)
+			return Py_False;
+		diff = v1->elements[1] - v2->elements[1];
+		if (diff > 1e-9 || -diff > 1e-9)
+			return Py_False;
+		diff = v1->elements[2] - v2->elements[2];
+		if (diff > 1e-9 || -diff > 1e-9)
+			return Py_False;
+		return Py_True;
+		
+	}
+	return Py_NotImplemented;
+}
 
 
 PyNumberMethods Vect_as_number[] = {
@@ -739,7 +766,7 @@ PyTypeObject VectObjectType = {
 	"Vector objects are simple.",	/* tp_doc         */
 	0,				/* tp_traverse       */
 	0,				/* tp_clear          */
-	0,				/* tp_richcompare    */
+	Vect_richcompare,	/* tp_richcompare    */
 	0,				/* tp_weaklistoffset */
 	0,				/* tp_iter           */
 	0,				/* tp_iternext       */

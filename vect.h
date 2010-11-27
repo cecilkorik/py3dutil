@@ -68,6 +68,7 @@ PyObject* Vect_slerp(PyObject *self_in, PyObject *args);
 PyObject* Vect_sserp(PyObject *self_in, PyObject *args);
 Py_ssize_t Vect_len(PyObject *self_in);
 PyObject* Vect_item(PyObject *self_in, Py_ssize_t index);
+PyObject* Vect_richcompare(PyObject* a, PyObject* b, int op);
 
 
 

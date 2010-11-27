@@ -149,6 +149,9 @@ void quat_normalize_internal(QuatObject *self)
 {
 	int i;
 	double mag = quat_mag2_internal(self);
+	if (mag == 0.0)
+		return;
+		
 	if (mag > (1.0 + -1e-7) && mag < (1.0 + 1e-7))
 		return;
 	mag = sqrt(mag);
@@ -161,7 +164,7 @@ void quat_normalize_internal(QuatObject *self)
 void quat_multiply_vect_internal(QuatObject *self, VectObject *v, VectObject *rv)
 {
 	QuatObject *conj, *rq, *other;
-	double mag = quat_mag_internal(other);
+	double mag;
 	int i;
 
 	// used in calculation, must be freed!
@@ -169,10 +172,17 @@ void quat_multiply_vect_internal(QuatObject *self, VectObject *v, VectObject *rv
 	rq = PyObject_New(QuatObject, &QuatObjectType);
 	other = PyObject_New(QuatObject, &QuatObjectType);
 
+	for (i = 0; i < 3; i++)
+		other->elements[i] = v->elements[i];
+	other->elements[3] = 0.0;
+		
+	mag = quat_mag_internal(other);
 	quat_get_conjugate_internal(self, conj);
 
 	for (i = 0; i < 3; i++)
 		rq->elements[i] = v->elements[i];
+	rq->elements[3] = 0.0;
+	
 	quat_multiply_internal(self, rq, other);
 	quat_multiply_internal(other, conj, rq);
 	for (i = 0; i < 3; i++)
@@ -186,6 +196,8 @@ void quat_multiply_vect_internal(QuatObject *self, VectObject *v, VectObject *rv
 
 PyObject* Quat_mul(PyObject *self_in, PyObject *other_in)
 {
+	int i;
+	int bValid = 1;
 	QuatObject *self, *rq, *other;
 	if (!Quat_Check(self_in))
 	{
@@ -196,12 +208,23 @@ PyObject* Quat_mul(PyObject *self_in, PyObject *other_in)
 	if (!Quat_Check(other_in) && !Vect_Check(other_in))	
 	
 	self = (QuatObject*)self_in;
+	if (!quat_validate(self))
+	{
+		PyErr_SetString(PyExc_ValueError, "invalid quat input");
+		return NULL;
+	}
 
 	if (Quat_Check(other_in))
 	{
 		other = (QuatObject*)other_in;
 		rq = PyObject_New(QuatObject, &QuatObjectType);
 		quat_multiply_internal(self, other, rq);
+		if (!quat_validate(rq))
+		{
+			PyErr_SetString(PyExc_ValueError, "invalid quat calculation");
+			Py_DECREF(rq);
+			return NULL;
+		}
 		return (PyObject*)rq;
 	}
 	else if (Vect_Check(other_in))
@@ -211,6 +234,14 @@ PyObject* Quat_mul(PyObject *self_in, PyObject *other_in)
 		rv = PyObject_New(VectObject, &VectObjectType);
 
 		quat_multiply_vect_internal(self, v, rv);
+		for (i = 0; i < 3; i++)
+			if (isnan(rv->elements[i])) { bValid = 0; break; }
+		if (!bValid)
+		{
+			PyErr_SetString(PyExc_ValueError, "invalid quat calculation");
+			Py_DECREF(rv);
+			return NULL;
+		}
 		return (PyObject*)rv;
 	}
 	else
@@ -230,8 +261,19 @@ PyObject* Quat_get_conjugate(PyObject *self_in, PyObject *unused)
 		return NULL;
 	}
 	self = (QuatObject*)self_in;
+	if (!quat_validate(self))
+	{
+		PyErr_SetString(PyExc_ValueError, "invalid quat input");
+		return NULL;
+	}
 	rv = PyObject_New(QuatObject, &QuatObjectType);
 	quat_get_conjugate_internal(self, rv);
+	if (!quat_validate(rv))
+	{
+		PyErr_SetString(PyExc_ValueError, "invalid quat calculation");
+		Py_DECREF(rv);
+		return NULL;
+	}
 
 	return (PyObject*)rv;
 }
@@ -253,6 +295,11 @@ PyObject* Quat_get_matrix(PyObject *self_in, PyObject *unused)
 		return NULL;
 	}
 	self = (QuatObject*)self_in;
+	if (!quat_validate(self))
+	{
+		PyErr_SetString(PyExc_ValueError, "invalid quat input");
+		return NULL;
+	}
 	x = self->elements[0]; y = self->elements[1]; z = self->elements[2]; w = self->elements[3];
 	xx = x * x; yy = y * y; zz = z * z;
 	xy = x * y; xz = x * z; yz = y * z;
@@ -289,7 +336,7 @@ PyObject* Quat_get_matrix(PyObject *self_in, PyObject *unused)
 
 PyObject* Quat_get_angle(PyObject *self_in, PyObject *unused)
 {
-	QuatObject *self, *other;
+	QuatObject *self;
 	int i;
 	double x, y, z, w;
 	double xx, yy, zz;
@@ -317,8 +364,8 @@ PyObject* Quat_get_angle(PyObject *self_in, PyObject *unused)
 	a[1] = asin(2.0 * (yw-xz)) * RAD2DEG;
 	a[2] = atan((2.0 * (zw+xy)) / (1.0 - (2.0 * (yy+zz)))) * RAD2DEG;
 
-	for (i = 0; i < 4; i++)
-		self->elements[i] -= other->elements[i];
+	/*for (i = 0; i < 4; i++)
+		self->elements[i] -= other->elements[i];*/
 
 	list = PyList_New(3);
 	for (i = 0; i < 3; i++)
@@ -344,6 +391,11 @@ PyObject* Quat_slerp(PyObject *self_in, PyObject *args)
 		return NULL;
 	}
 	self = (QuatObject*)self_in;
+	if (!quat_validate(self))
+	{
+		PyErr_SetString(PyExc_ValueError, "invalid quat input");
+		return NULL;
+	}
 	cv = 0.0;
 	for (i = 0; i < 4; i++)
 		cv += self->elements[i] * other->elements[i];
@@ -366,6 +418,14 @@ PyObject* Quat_slerp(PyObject *self_in, PyObject *args)
 	for (i = 0; i < 4; i++)
 		rv->elements[i] = (self->elements[i] * ss) + (other->elements[i] * ts);
 
+	if (!quat_validate(rv))
+	{
+		PyErr_SetString(PyExc_ValueError, "invalid quat calculation");
+		Py_DECREF(rv);
+		return NULL;
+	}
+
+
 	return (PyObject*)rv;
 }
 
@@ -385,6 +445,13 @@ PyObject* Quat_slerp_turn(PyObject *self_in, PyObject *args)
 	if (!PyArg_ParseTuple(args, "O!d", &QuatObjectType, &other, &amt))
 	{
 		PyErr_SetString(PyExc_TypeError, "arguments must be a quat and a float");
+		return NULL;
+	}
+	
+	self = (QuatObject*)self_in;
+	if (!quat_validate(self))
+	{
+		PyErr_SetString(PyExc_ValueError, "invalid quat input");
 		return NULL;
 	}
 
@@ -427,6 +494,13 @@ PyObject* Quat_slerp_turn(PyObject *self_in, PyObject *args)
 	for (i = 0; i < 4; i++)
 		rv->elements[i] = (self->elements[i] * ss) + (other->elements[i] * ts);
 
+	if (!quat_validate(rv))
+	{
+		PyErr_SetString(PyExc_ValueError, "invalid quat calculation");
+		Py_DECREF(rv);
+		return NULL;
+	}
+
 	return (PyObject*)rv;
 }
 
@@ -436,7 +510,7 @@ PyObject* Quat_copy(PyObject *self_in, PyObject *unused)
 	int i;
 	if (!Quat_Check(self_in))	
 	{
-		PyErr_SetString(PyExc_TypeError, "not a vector");
+		PyErr_SetString(PyExc_TypeError, "not a quat");
 		return NULL;
 	}
 	self = (QuatObject*)self_in;
@@ -452,12 +526,23 @@ PyObject* Quat_ip_normalize(PyObject *self_in, PyObject *unused)
 	QuatObject *self;
 	if (!Quat_Check(self_in))	
 	{
-		PyErr_SetString(PyExc_TypeError, "not a vector");
+		PyErr_SetString(PyExc_TypeError, "not a quat");
 		return NULL;
 	}
 	self = (QuatObject*)self_in;
+	if (!quat_validate(self))
+	{
+		PyErr_SetString(PyExc_ValueError, "invalid quat input");
+		return NULL;
+	}
+		
 	quat_normalize_internal(self);
 
+	if (!quat_validate(self))
+	{
+		PyErr_SetString(PyExc_ValueError, "invalid quat calculation");
+		return NULL;
+	}
 	Py_INCREF(self);
 	return (PyObject*)self;
 }
@@ -483,6 +568,11 @@ PyObject* Quat_mag2(PyObject *self_in, PyObject *unused)
 		return NULL;
 	}
 	self = (QuatObject*)self_in;
+	if (!quat_validate(self))
+	{
+		PyErr_SetString(PyExc_ValueError, "invalid quat input");
+		return NULL;
+	}
 	return PyFloat_FromDouble(quat_mag_internal(self));
 }
 
@@ -552,7 +642,26 @@ PyObject* Quat_richcompare(PyObject* a, PyObject* b, int op)
 	return Py_NotImplemented;
 }
 
+PyObject* Quat_negate_ip(PyObject* self_in)
+{
+	return Quat_get_conjugate(self_in, NULL);
+}
 
+int quat_validate(QuatObject* input)
+{
+	int bValid = 1;
+	int i;
+	
+	for (i = 0; i < 4; i++)
+	{
+		if (isnan(input->elements[i]))
+		{
+			bValid = 0;
+			break;
+		}
+	}
+	return bValid;
+}
 
 
 
@@ -564,7 +673,7 @@ PyNumberMethods Quat_as_number[] = {
     0,                  /* nb_remainder */
     0,                  /* nb_divmod */
     0,                  /* nb_power */
-    Quat_get_conjugate, /* nb_negative */
+    Quat_negate_ip, 	/* nb_negative */
     0,                  /* nb_positive */
     0,                  /* nb_absolute */
     Quat_true,          /* nb_nonzero */

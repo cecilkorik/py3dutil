@@ -11,7 +11,7 @@ if os.path.exists('buildno'):
 dump(buildno, open('buildno', 'wb'))
 
 setup (name = 'py3dutil',
-	version = '0.2.%.4d' % (buildno,),
+	version = '0.3.%.4d' % (buildno,),
 	description = 'Accelerator library for 3d games',
 	author = 'Bradley Lawrence',
 	author_email = 'py3dutil@iambitter.org',
